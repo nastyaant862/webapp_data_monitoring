@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мониторинг параметров процесса</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #ececee;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            border: 1.5px solid #ffffff
+        }
+
+        th {
+            background-color: #dcdee0;
+            font-weight: bold;
+        }
+
+        td {
+            color: #2c3e50;
+        }
+
+        .footer {
+            text-align: center;
+            color: #adadac;
+            margin-top: 20px;
+        }
+
+        .highlight-red {
+            background-color: #f8d7da;
+        }
+
+        .highlight-green {
+            background-color: #d4edda;
+        }
+
+        .report-btn, .change-params-btn {
+            border-radius: 5px;
+            border: 1.5px solid #ccc;
+            color: blac
+            transition: .1s linear;
+            background: #f5f6f9;
+            width: 200px;
+            height: 40px;
+            cursor: pointer;
+            display: inline-block;
+            margin: 10px;
+            vertical-align: middle;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .report-btn:hover, .change-params-btn:hover {
+            background-color: #d6d6db;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            transition: .1s linear;
+            font-size: 20px;
+            color: white !important;
+            background: #d64545 !important;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex; /* Используем flexbox */
+            justify-content: center; /* Выравниваем крестик по горизонтали */
+            align-items: center; /* Выравниваем крестик по вертикали */
+            text-align: center; /* Для корректного отображения текста */
+        }
+
+        .close-btn:hover {
+            background-color: #c43b3b !important;
+            color: #fff5f5 !important;
+        }
+
+        .form-container {
+            display: none;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: fixed;  /* Позиционирование относительно окна браузера */
+            top: 50%;  /* По вертикали по центру */
+            left: 50%;  /* По горизонтали по центру */
+            transform: translate(-50%, -50%);  /* Сдвиг на 50% от ширины и высоты для точного центрирования */
+            width: 700px;
+            z-index: 1000;  /* Обеспечит, что форма будет поверх других элементов */
+        }
+
+        .form-container input {
+            margin-bottom: 10px;
+            padding: 8px;
+            width: 97%;
+        }
+
+        .form-container button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            transition: .1s linear;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .form-container button:hover {
+            background-color: #45a049;
+        }
+
+        .success-message {
+            color: green;
+            font-size: 16px;
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>Данные с датчиков</h1>
+
+    <div class="container">
+        <table>
+            <tr>
+                <th>Параметр</th>
+                <th>Текущее значение</th>
+                <th>Эталонное значение</th>
+                <th>Единица измерения</th>
+            </tr>
+            <tr id="row_temperature">
+                <td>Температура</td>
+                <td id="temperature">Ожидание...</td>
+                <td id="reference_temperature">Ожидание...</td>
+                <td>°C</td>
+            </tr>
+            <tr id="row_time_of_process">
+                <td>Общее время конширования</td>
+                <td id="time_of_process">Ожидание...</td>
+                <td id="reference_time_of_process">Ожидание...</td>
+                <td>ч</td>
+            </tr>
+            <tr id="row_cacao">
+                <td>Какао</td>
+                <td id="cacao">Ожидание...</td>
+                <td id="reference_cacao">Ожидание...</td>
+                <td>%</td>
+            </tr>
+            <tr id="row_chocolate_powder">
+                <td>Шоколадный порошок</td>
+                <td id="chocolate_powder">Ожидание...</td>
+                <td id="reference_chocolate_powder">Ожидание...</td>
+                <td>%</td>
+            </tr>
+            <tr id="row_aromatizer">
+                <td>Ароматизаторы</td>
+                <td id="aromatizer">Ожидание...</td>
+                <td id="reference_aromatizer">Ожидание...</td>
+                <td>%</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="footer">
+        <p>Данные обновляются в реальном времени.</p>
+        <button class="report-btn">Отчёт</button>
+        <button class="change-params-btn">Изменить эталонные значения</button>
+    </div>
+
+    <div class="form-container" id="form-container">
+        <button class="close-btn" id="close-btn">×</button>
+        <h2>Изменить эталонные значения</h2>
+        <input type="number" id="new_temperature" placeholder="Новая температура">
+        <input type="number" id="new_time_of_process" placeholder="Новое время конширования">
+        <input type="number" id="new_cacao" placeholder="Новый процент какао">
+        <input type="number" id="new_chocolate_powder" placeholder="Новый процент шоколадного порошка">
+        <input type="number" id="new_aromatizer" placeholder="Новый процент ароматизаторов">
+        <button id="submit-changes">Сохранить изменения</button>
+    </div>
+
+    <div id="success-message" class="success-message" style="display:none;">
+        Данные успешно изменены!
+    </div>
+
+    <script>
+        // Подключение к WebSocket серверу
+        const socket = new WebSocket("ws://localhost:8000/ws");
+
+        document.getElementsByClassName("report-btn")[0].addEventListener("click", function() {
+            fetch("/api/generate_report", { method: "GET" })
+                .then(response => response.blob())
+                .then(blob => {
+                    // Скачиваем файл
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "report.txt";
+                    a.click();
+                    URL.revokeObjectURL(url);
+                })
+                .catch(error => {
+                    console.error("Ошибка при создании отчёта:", error);
+                });
+        });
+
+        // Функция для проверки значений
+        function checkValue(id, value, referenceValue, delta) {
+            const row = document.getElementById(id);
+            if (Math.abs(value - referenceValue) > delta) {
+                row.classList.remove('highlight-green');
+                row.classList.add('highlight-red');
+            } else {
+                row.classList.remove('highlight-red');
+                row.classList.add('highlight-green');
+            }
+        }
+
+        // Обработка полученных сообщений от WebSocket
+        socket.onmessage = function(event) {
+            const message = event.data;
+            const data = message.split(": ");
+            let currentValue, referenceValue;
+
+            if (data[0] === "Температура") {
+                currentValue = parseFloat(data[1]);
+                referenceValue = parseFloat(document.getElementById("reference_temperature").textContent);
+                document.getElementById("temperature").textContent = currentValue;
+                checkValue("row_temperature", currentValue, referenceValue, 10);
+            } else if (data[0] === "Общее время конширования") {
+                currentValue = parseFloat(data[1]);
+                referenceValue = parseFloat(document.getElementById("reference_time_of_process").textContent);
+                document.getElementById("time_of_process").textContent = currentValue;
+                checkValue("row_time_of_process", currentValue, referenceValue, 1);
+            } else if (data[0] === "Процент какао") {
+                currentValue = parseFloat(data[1]);
+                referenceValue = parseFloat(document.getElementById("reference_cacao").textContent);
+                document.getElementById("cacao").textContent = currentValue;
+                checkValue("row_cacao", currentValue, referenceValue, 3);
+            } else if (data[0] === "Процент шоколадного порошка") {
+                currentValue = parseFloat(data[1]);
+                referenceValue = parseFloat(document.getElementById("reference_chocolate_powder").textContent);
+                document.getElementById("chocolate_powder").textContent = currentValue;
+                checkValue("row_chocolate_powder", currentValue, referenceValue, 1);
+            } else if (data[0] === "Процент ароматизаторов") {
+                currentValue = parseFloat(data[1]);
+                referenceValue = parseFloat(document.getElementById("reference_aromatizer").textContent);
+                document.getElementById("aromatizer").textContent = currentValue;
+                checkValue("row_aromatizer", currentValue, referenceValue, 3);
+            }
+
+            // Обработка эталонных значений
+            else if (data[0] === "Эталонная температура") {
+                document.getElementById("reference_temperature").textContent = data[1];
+            } else if (data[0] === "Эталонное время конширования") {
+                document.getElementById("reference_time_of_process").textContent = data[1];
+            } else if (data[0] === "Эталонный процент какао") {
+                document.getElementById("reference_cacao").textContent = data[1];
+            } else if (data[0] === "Эталонный процент шоколадного порошка") {
+                document.getElementById("reference_chocolate_powder").textContent = data[1];
+            } else if (data[0] === "Эталонный процент ароматизаторов") {
+                document.getElementById("reference_aromatizer").textContent = data[1];
+            }
+        };
+
+        // Обработка ошибок при подключении
+        socket.onerror = function(error) {
+            console.error("WebSocket Error: " + error);
+        };
+
+        // Открытие формы при нажатии на кнопку
+        document.querySelector('.change-params-btn').addEventListener('click', function() {
+            document.getElementById('form-container').style.display = 'block';
+        });
+
+        // закрытие формы при нажатии на Х
+        document.getElementById('close-btn').addEventListener('click', function() {
+            document.getElementById('form-container').style.display = 'none';
+        });
+
+        // Отправка формы на сервер
+        document.getElementById('submit-changes').addEventListener('click', function() {
+            const newTemperature = document.getElementById('new_temperature').value;
+            const newTimeOfProcess = document.getElementById('new_time_of_process').value;
+            const newCacao = document.getElementById('new_cacao').value;
+            const newChocolatePowder = document.getElementById('new_chocolate_powder').value;
+            const newAromatizer = document.getElementById('new_aromatizer').value;
+
+            fetch('/api/update_standart_params', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    temperature: newTemperature,
+                    time_of_process: newTimeOfProcess,
+                    cacao: newCacao,
+                    chocolate_powder: newChocolatePowder,
+                    aromatizer: newAromatizer
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Показать сообщение об успешном изменении
+                    document.getElementById('success-message').style.display = 'block';
+                    setTimeout(function() {
+                        location.reload(); // Перезагрузка страницы
+                    }, 2000);
+                }
+            })
+            .catch(error => {
+                console.error("Ошибка при обновлении данных:", error);
+            });
+        });
+
+    </script>
+</body>
+</html>
